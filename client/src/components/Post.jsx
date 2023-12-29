@@ -12,7 +12,7 @@ const Post = ({post}) => {
   return (
     <div className="w-full max-w-[500px] mx-auto flex flex-col gap-5 p-4 rounded-md border shadow-md bg-white">
       <div>
-        <UserProfile />
+        <UserProfile user={post.user} />
       </div>
       <img
         src={post.photo}
@@ -20,7 +20,7 @@ const Post = ({post}) => {
         className="w-full rounded-md object-cover max-h-[550px]"
       />
       <div className="flex flex-col gap-4">
-        <p className="font-semibold text-lg">Chainsawman man #makima</p>
+        <p className="font-semibold text-lg">{post.caption}</p>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-5">
             <FaHeart className="text-2xl text-red-500 cursor-pointer" />
