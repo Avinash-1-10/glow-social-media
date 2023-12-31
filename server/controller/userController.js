@@ -1,65 +1,116 @@
-const bcryptjs = require("bcryptjs");
-const User = require("../models/user");
-const jwt = require("jsonwebtoken");
+const UserModel = require("../models/user");
+const bcrypt = require("bcryptjs");
 
-// Signup Route
-exports.createUser = async (req, res) => {
+// get a User
+exports.getUser = async (req, res) => {
+  const id = req.params.id;
+
   try {
-    const { email, password, confirmPassword, username } = req.body;
-    if (!email || !password || !username || !confirmPassword) {
-      return res.status(400).json({ msg: "Please enter all the fields" });
-    }
-    if (password.length < 6) {
-      return res
-        .status(400)
-        .json({ msg: "Password should be atleast 6 characters" });
-    }
-    if (confirmPassword !== password) {
-      return res.status(400).json({ msg: "Both the passwords dont match" });
-    }
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res
-        .status(400)
-        .json({ msg: "User with the same email already exists" });
-    }
-    const hashedPassword = await bcryptjs.hash(password, 8);
-    const newUser = new User({
-      email,
-      password: hashedPassword,
-      username,
-    });
+    const user = await UserModel.findById(id);
 
-    const savedUser = await newUser.save();
-    res.json(savedUser);
-  } catch (err) {
-    res.status(500).json({ msg: "Internal server error. Please try again." });
+    if (user) {
+      const { password, ...otherDetails } = user._doc;
+
+      res.status(200).json(otherDetails);
+    } else {
+      res.status(404).json("No such user exists");
+    }
+  } catch (error) {
+    res.status(500).json(error);
   }
 };
 
-// Login Route
-exports.loginUser = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ msg: "Please enter all the fields" });
-    }
+// update a user
+exports.updateUser = async (req, res) => {
+  const id = req.params.id;
+  const { currentUserId, currentUserAdminStatus, password } = req.body;
 
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res
-        .status(400)
-        .send({ msg: "User with this email does not exist" });
-    }
+  if (id === currentUserId || currentUserAdminStatus) {
+    try {
+      if (password) {
+        const salt = await bcrypt.genSalt(10);
+        req.body.password = await bcrypt.hash(password, salt);
+      }
 
-    const isMatch = await bcryptjs.compare(password, user.password);
+      const user = await UserModel.findByIdAndUpdate(id, req.body, {
+        new: true,
+      });
 
-    if (!isMatch) {
-      return res.status(400).send({ msg: "Incorrect password." });
+      res.status(200).json(user);
+    } catch (error) {
+      res.status(500).json(error);
     }
-    const token = jwt.sign({ id: user._id }, "passwordKey");
-    res.json({ token, user: { id: user._id, username: user.username } });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+  } else {
+    res.status(403).json("Access Denied! you can only update your own profile");
+  }
+};
+
+// Delete user
+exports.deleteUser = async (req, res) => {
+  const id = req.params.id;
+
+  const { currentUserId, currentUserAdminStatus } = req.body;
+
+  if (currentUserId === id || currentUserAdminStatus) {
+    try {
+      await UserModel.findByIdAndDelete(id);
+      res.status(200).json("User deleted successfully");
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  } else {
+    res.status(403).json("Access Denied! you can only delete your own profile");
+  }
+};
+
+// Follow a User
+exports.followUser = async (req, res) => {
+  const id = req.params.id;
+
+  const { currentUserId } = req.body;
+
+  if (currentUserId === id) {
+    res.status(403).json("Action forbidden");
+  } else {
+    try {
+      const followUser = await UserModel.findById(id);
+      const followingUser = await UserModel.findById(currentUserId);
+
+      if (!followUser.followers.includes(currentUserId)) {
+        await followUser.updateOne({ $push: { followers: currentUserId } });
+        await followingUser.updateOne({ $push: { following: id } });
+        res.status(200).json("User followed!");
+      } else {
+        res.status(403).json("User is Already followed by you");
+      }
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  }
+};
+
+// UnFollow a User
+exports.UnFollowUser = async (req, res) => {
+  const id = req.params.id;
+
+  const { currentUserId } = req.body;
+
+  if (currentUserId === id) {
+    res.status(403).json("Action forbidden");
+  } else {
+    try {
+      const followUser = await UserModel.findById(id);
+      const followingUser = await UserModel.findById(currentUserId);
+
+      if (followUser.followers.includes(currentUserId)) {
+        await followUser.updateOne({ $pull: { followers: currentUserId } });
+        await followingUser.updateOne({ $pull: { following: id } });
+        res.status(200).json("User Unfollowed!");
+      } else {
+        res.status(403).json("User is not followed by you");
+      }
+    } catch (error) {
+      res.status(500).json(error);
+    }
   }
 };
