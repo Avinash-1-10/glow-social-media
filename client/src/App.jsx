@@ -4,6 +4,7 @@ import Home from "./pages/Home";
 import BottomBar from "./components/BottomBar";
 import Register from "./components/Register";
 import Login from "./components/Login";
+import Profile from "./pages/Profile";
 
 const App = () => {
   return (
@@ -12,6 +13,7 @@ const App = () => {
         <Route path="/" element={<Home />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/profile" element={<Profile />} />
       </Routes>
       <div className="fixed bottom-0 inline xs:hidden w-full p-2 border py-3 z-50 bg-white">
         <BottomBar />
