@@ -1,11 +1,12 @@
 // Home.jsx
-import React from "react";
+import React, { useState } from "react";
 import Sidebar from "../components/Sidebar";
 import Posts from "../components/Posts";
 import Notifications from "../components/Notifications";
 import BottomBar from "../components/BottomBar";
 
 const Home = () => {
+  const [isChange, setIsChange] = useState(true);
   return (
     <>
       <div className="fixed bottom-0 inline xs:hidden w-full p-2 border py-3 z-50 bg-white">
@@ -16,7 +17,7 @@ const Home = () => {
           <Sidebar />
         </div>
         <div className="w-full sm:w-5/10  md:w-5/10 lg:w-5/10 xl:w-2/5 ">
-          <Posts />
+          <Posts isChange={isChange} setIsChange={setIsChange}/>
         </div>
         <div className="w-full sm:w-3/10  md:w-3/10 lg:w-3/10 xl:w-2/5 hidden xs:inline shadow-md">
           <Notifications />

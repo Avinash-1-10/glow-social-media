@@ -3,6 +3,8 @@ import ProfilePage from "../components/ProfilePage";
 import Sidebar from "../components/Sidebar";
 import Notifications from "../components/Notifications";
 
+
+
 const Profile = () => {
   return (
     <div>

@@ -10,15 +10,15 @@ import UserProfile from "./UserProfile";
 
 const Post = ({ post }) => {
   return (
-    <div className="w-full max-w-[500px] mx-auto flex flex-col gap-5 p-4 rounded-md shadow-md bg-[#1AE85E]">
+    <div className="w-full max-w-[500px] mx-auto flex flex-col gap-5 p-4 rounded-md shadow-md">
       <div>
-        <UserProfile user={post.user} />
+        <UserProfile  />
       </div>
-      <p className="font-semibold text-lg">{post.caption}</p>
+      <p className="font-semibold text-lg">{post.text}</p>
       <img
-        src={post.photo}
+        src={post.image}
         alt="Post"
-        className="w-full rounded-md object-cover max-h-[550px]"
+        className="w-full rounded-md object-cover max-h-[600px]"
       />
       <div className="flex flex-col">
         <div className="flex items-center justify-between bg-slate-100 p-3  rounded-lg">
